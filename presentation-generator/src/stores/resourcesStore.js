@@ -1,0 +1,128 @@
+import { create } from 'zustand';
+import useGuionStore from './guionStore.js';
+
+const useResourcesStore = create((set, get) => ({
+  // Estado
+  resources: {
+    svg: [],
+    image: [],
+    video: [],
+  },
+  uploads: {
+    inProgress: 0,
+    lastError: null,
+    successCount: 0,
+  },
+
+  // Actions
+  addResource: (type, file, content, metadata) => {
+    const newResource = {
+      id: crypto.randomUUID(),
+      name: file.name,
+      type: file.type,
+      content, // base64 string o Blob URL
+      metadata: {
+        size: file.size,
+        mimeType: file.type,
+        ...metadata,
+      },
+      dateAdded: new Date(),
+    };
+
+    set((state) => ({
+      resources: {
+        ...state.resources,
+        [type]: [...state.resources[type], newResource],
+      },
+      uploads: {
+        ...state.uploads,
+        successCount: state.uploads.successCount + 1,
+      },
+    }));
+
+    return newResource.id;
+  },
+
+  removeResource: (type, id) => {
+    // Limpiar referencias en el guion antes de eliminar el recurso
+    try {
+      useGuionStore.getState().cleanupResourceReferences(type, id);
+    } catch { /* guionStore no disponible aún */ }
+
+    set((state) => {
+      const resource = state.resources[type].find((r) => r.id === id);
+      
+      // Limpiar Object URLs si existen
+      if (resource && (resource.metadata.requiresObjectURL || type === 'video' || type === 'audio')) {
+        try {
+          URL.revokeObjectURL(resource.content);
+        } catch (e) {
+          console.warn('Error revoking URL:', e);
+        }
+      }
+
+      return {
+        resources: {
+          ...state.resources,
+          [type]: state.resources[type].filter((r) => r.id !== id),
+        },
+      };
+    });
+  },
+
+  clearAllResources: () => {
+    // Limpiar todos los Object URLs
+    const state = get();
+    Object.entries(state.resources).forEach(([type, items]) => {
+      items.forEach((item) => {
+        if (item.metadata.requiresObjectURL || type === 'video' || type === 'audio') {
+          try {
+            URL.revokeObjectURL(item.content);
+          } catch (e) {
+            console.warn('Error revoking URL:', e);
+          }
+        }
+      });
+    });
+
+    set({
+      resources: {
+        svg: [],
+        image: [],
+        video: [],
+      },
+    });
+  },
+
+  setError: (error) => {
+    set((state) => ({
+      uploads: {
+        ...state.uploads,
+        lastError: error,
+      },
+    }));
+  },
+
+  // Getters
+  getTotalResources: () => {
+    const state = get();
+    return Object.values(state.resources).reduce((sum, arr) => sum + arr.length, 0);
+  },
+
+  getResourceCounts: () => {
+    const state = get();
+    return {
+      svg: state.resources.svg.length,
+      image: state.resources.image.length,
+      video: state.resources.video.length,
+      total: Object.values(state.resources).reduce((sum, arr) => sum + arr.length, 0),
+    };
+  },
+
+  getResourcesByType: (type) => {
+    const state = get();
+    return state.resources[type] || [];
+  },
+}));
+
+export default useResourcesStore;

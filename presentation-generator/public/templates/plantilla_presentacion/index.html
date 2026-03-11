@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="Scripts/style.css">
+    <link rel="stylesheet" type="text/css" href="Animaciones/rotate_scale_up.css">
+    <link rel="stylesheet" type="text/css" href="Animaciones/heartbeat.css">
+    <link rel="stylesheet" type="text/css" href="Animaciones/fade_in_fwd.css">
+    <link rel="stylesheet" href="Animaciones/puff-out-center.css">
+    <link rel="stylesheet" href="Animaciones/bounce-in-top.css">
+</head>
+
+<body>
+    <div id="main">
+        <div id="start">
+            <img src="Imagenes/start.png" alt style="height: 10%;">
+        </div>
+        <div id="header" class="d-none">
+            <h1 id="title" class="mb-auto text-center"></h1>
+        </div>
+        <div id="svg"></div>
+
+        <!-- Modal exclusivo para imágenes -->
+
+        <div id="tipo_imagen" class="modal_personalizado d-none" tabindex="-1" aria-labelledby="modalLabel"
+            aria-hidden="true">
+            <div class="content">
+                <div class="titulo"><span id="tipo_imagen_subtitulo" class="sub_titulo"></span></div>
+                <div class="contenedor flip-container" id="flipContainerImage">
+                    <div class="flipper">
+                        <div class="front">
+                            <!-- Cara frontal: Imagen -->
+                            <img src="" id="tipo_imagen_imagen" alt="">
+                        </div>
+                        <div class="back">
+                            <!-- Cara trasera: Texto -->
+                            <div id="tipo_imagen_texto" class="texto"></div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleFlip('flipContainerImage')" class="btn_flipper" id="btn_flipper_image1"
+                    data-target="flipContainerImage">
+                    <i class="bi bi-file-text"></i>
+                </button>
+                <img src="Imagenes/exit.png" class="btn_exit">
+            </div>
+        </div>
+
+        <!-- Modal exclusivo para SVG -->
+
+        <div id="tipo_svg" class="modal_personalizado d-none" tabindex="-1" aria-labelledby="modalLabel"
+            aria-hidden="true">
+            <div class="content">
+                <div class="titulo"><span id="tipo_svg_subtitulo" class="sub_titulo"></span></div>
+                <div class="contenedor" id="containerSVG">
+                </div>
+                <img src="Imagenes/exit.png" class="btn_exit">
+            </div>
+        </div>
+
+        <!-- Modal exclusivo para video -->
+        <div id="tipo_video" class="modal_personalizado d-none" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="content">
+                <div class="titulo"><span id="tipo_video_subtitulo" class="sub_titulo"></span></div>
+                <div class="contenedor" id="containerVideo">
+                    <video id="tipo_video_video" width="100%" height="100%" controls>
+                        <source src="" type="video/mp4">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                </div>
+                <img src="Imagenes/exit.png" class="btn_exit">
+            </div>
+        </div>
+
+        <!-- Modal exclusivo para galería 2D -->
+
+        <div id="tipo_galeria_2d" class="modal_personalizado d-none" tabindex="-1" aria-labelledby="modalLabel"
+            aria-hidden="true">
+            <div class="content">
+                <div class="titulo"><span id="tipo_galeria_2d_subtitulo" class="sub_titulo"></span></div>
+                <div class="contenedor flip-container" id="flipContainerGallery2D">
+                    <div class="flipper">
+                        <div class="front">
+                            <!-- Cara frontal: Galería 2D (puede ser una imagen o un conjunto de imágenes) -->
+                            <img src="" id="tipo_galeria_2d_imagen" alt="">
+                        </div>
+                        <div class="back">
+                            <!-- Cara trasera: Descripción o información adicional sobre la galería 2D -->
+                            <div id="tipo_galeria_2d_texto" class="texto"></div>
+                        </div>
+                    </div>
+                    <button onclick="toggleFlip('flipContainerGallery2D')" class="btn_flipper"
+                        id="btn_flipper_gallery2d" data-target="flipContainerGallery2D">
+                        <i class="bi bi-file-text"></i>
+                    </button>
+                </div>
+                <div class="miniaturas" id="miniaturas">
+                    <!-- Miniaturas como el ejemplo de abajo se deben de insertar -->
+                    <!-- <img src="Imagenes/diapo-15(01).png" alt="Imagen 1"> -->
+                </div>
+                <img src="Imagenes/exit.png" class="btn_exit">
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <audio id="principal" class="d-none"></audio>
+    <audio id="secundario" class="d-none"></audio>
+</body>
+<script>
+    function toggleFlip(targetId) {
+        var flipContainer = document.getElementById(targetId);
+        if (!flipContainer) return; // Si no encuentra el contenedor, termina la función
+
+        flipContainer.classList.toggle('flip');
+
+        // Cambia el icono basado en el estado
+        // Busca el botón relacionado con este flip-container
+        var icon = flipContainer.closest('.modal_personalizado').querySelector('.btn_flipper i');
+        if (flipContainer.classList.contains('flip')) {
+            icon.className = 'bi bi-image'; // Icono de Bootstrap para el estado de imagen
+        } else {
+            icon.className = 'bi bi-file-text'; // Icono de Bootstrap para el estado de texto
+        }
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+    integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+    integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+    crossorigin="anonymous"></script>
+<script type="module" src="Scripts/main.js"></script>
+
+</html>

@@ -1,0 +1,449 @@
+/* Modal de Video */
+#tipo_video {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tipo_video .content {
+    width: 80%;
+    height: 80%;
+    position: absolute;
+    z-index: 1000;
+    background-color: var(--fondo2);
+    border-radius: var(--borderRadius);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#tipo_video .titulo {
+    width: 100%;
+    height: 12%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#containerVideo {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tipo_video_video {
+    width: 100%;
+    height: 100%;
+    border-radius: 1vw;
+    background: #000;
+}
+
+:root {
+    --titulo: #000;
+    --fondo: #000;
+    --fondo2: #fff;
+    --borde: #000;
+    --texto: #000;
+    --texto2: #000;
+    --texto3: #000;
+    --fontTitle: 4vw;
+    --fontSubTitle: 2.2vw;
+    --fontContent: 1.2vw;
+    --fontContentMini: 1.0vw;
+    --borderActive: #ffe100;
+    --borderRadius: 2vw;
+    --btn: 4vw;
+    --btn2: -2vw;
+    --paddingModalSVG: 4vw;
+}
+
+body {
+    background-color: var(--fondo);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+}
+
+#start {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9);
+    /* 50% de transparencia */
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+#start img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: 20vw;
+    cursor: pointer;
+}
+
+#main {
+    background-image: url('../fondo.png');
+    /* Establece la imagen de fondo */
+    background-size: cover;
+    /* Asegura que la imagen de fondo cubra todo el espacio disponible */
+    background-position: center;
+    /* Centra la imagen de fondo */
+    background-repeat: no-repeat;
+    /* Evita que la imagen de fondo se repita */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#header {
+    height: 10%;
+}
+
+#title {
+    font-size: var(--fontTitle);
+}
+
+#svg {
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1%;
+}
+
+#svg svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.items {
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: pointer;
+}
+
+.itemSVG {
+    cursor: pointer;
+}
+
+.items.selected>circle {
+    stroke: var(--borderActive);
+    stroke-width: 4;
+}
+
+.sub_items.selected>g:first-child,
+.sub_items.selected>circle:first-child {
+    stroke: var(--borderActive);
+    stroke-width: 4;
+
+}
+
+.itemSVG.selected>path:first-child {
+    stroke: var(--borderActive);
+    stroke-width: 4;
+}
+
+.items.selected.principal>g:nth-child(2) {
+    stroke: var(--borderActive);
+    stroke-width: 4;
+}
+
+/* Animacion para el boton start */
+@keyframes animateImage {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+.animate {
+    animation: animateImage 3s forwards;
+}
+
+/* Modal personalizado */
+
+.modal_personalizado {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.9);
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.content {
+    width: 80%;
+    height: 80%;
+    position: absolute;
+    z-index: 1000;
+    background-color: var(--fondo2);
+    border-radius: var(--borderRadius);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center;
+}
+
+.btn_exit {
+    position: absolute;
+    top: var(--btn2);
+    right: var(--btn2);
+    width: var(--btn);
+    height: var(--btn);
+    cursor: pointer;
+}
+
+.btn_exit.disabled {
+    cursor: not-allowed;
+    filter: grayscale(100%);
+    pointer-events: none;
+}
+
+.miniatura.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.miniaturaTexto.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.itemSVG.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sub_titulo {
+    font-size: var(--fontSubTitle);
+    font-weight: bold;
+}
+
+/* Modal de Imagen */
+.titulo {
+    width: 100%;
+    height: 12%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor {
+    width: 100%;
+    height: 85%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor img {
+    width: auto;
+    height: 100%;
+    border-radius: var(--borderRadius);
+}
+
+/* Estilos para voltear */
+.flip-container {
+    perspective: 1000px;
+}
+
+.flipper {
+    transition: 0.6s;
+    transform-style: preserve-3d;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.front,
+.back {
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* Añadido para centrar el contenido */
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    text-align: center;
+    /* Asegura que el texto también esté centrado */
+}
+
+.front {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.back {
+    transform: rotateY(180deg);
+}
+
+.flip-container.flip .flipper {
+    transform: rotateY(180deg);
+}
+
+
+
+.texto {
+    font-size: var(--fontContent);
+    background-color: #fdeecc;
+    height: 100%;
+    width: 100%;
+    border-radius: var(--borderRadius);
+    overflow: auto;
+    /* Permite el desplazamiento si el contenido desborda */
+    display: flex;
+    /* Usa Flexbox para el contenedor */
+    justify-content: center;
+    /* Centra el contenido horizontalmente */
+    align-items: center;
+    /* Centra el contenido verticalmente */
+    text-align: center;
+    padding: 1vw;
+    margin-right: 10.7%;
+    margin-left: 10.7%;
+    /* Asegura que el texto dentro también esté centrado */
+}
+
+/* Estilos boton flipper */
+.btn_flipper {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: var(--btn);
+    height: var(--btn);
+    background-color: #007bff;
+    /* Color azul más suave */
+    color: white;
+    /* Color de texto/icono */
+    border: none;
+    /* Elimina el borde */
+    display: flex;
+    /* Añade flex para centrar el icono */
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    cursor: pointer;
+    /* Cambia el cursor a pointer */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Añade sombra para un efecto elevado */
+    transition: background-color 0.3s, transform 0.3s;
+    /* Suaviza el cambio de color y añade efecto al hacer hover */
+    border-radius: 10vw 0vw 10vw 10vw;
+}
+
+.btn_flipper:hover {
+    background-color: #0056b3;
+    /* Oscurece el botón al hacer hover */
+    transform: scale(1.1);
+    /* Aumenta ligeramente el tamaño al hacer hover */
+}
+
+.btn_flipper i {
+    font-size: 2vw;
+    /* Ajusta el tamaño del icono */
+}
+
+
+
+/* Modal de gareia 2d */
+#flipContainerGallery2D {
+    height: 70% !important;
+}
+
+#miniaturas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: 18%;
+    /* Asegúrate de que el contenedor tenga un alto definido */
+}
+
+#miniaturas img {
+    height: 80%;
+    width: auto;
+    aspect-ratio: 1 / 1;
+    /* Mantiene la relación de aspecto 1:1 */
+    object-fit: cover;
+    /* Asegura que la imagen cubra el espacio sin perder su aspecto */
+    margin: 1%;
+    /* Espacio entre imágenes */
+    border-radius: var(--borderRadius);
+}
+
+#btn_flipper_gallery2d {
+    margin-right: 10.7%;
+}
+
+.miniatura.selected {
+    border: 0.2vw solid var(--borderActive);
+}
+
+/* Modal SVG */
+#containerSVG svg {
+    max-height: 100%;
+    border-radius: var(--borderRadius) !important;
+    background-image: url('../fondo.png');
+
+}
+
+#miniaturas div {
+    display: flex;
+    /* Habilita flexbox para el contenedor */
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    text-align: center;
+    /* Asegura que el texto dentro esté centrado si ocupa más de una línea */
+    gap: 10px;
+    /* Espacio mínimo entre elementos, ajusta según necesidad */
+    height: 80%;
+    width: auto;
+    aspect-ratio: 2 / 1;
+    object-fit: cover;
+    margin: 1%;
+    background-color: #fdeecc;
+    border-radius: var(--borderRadius);
+    font-size: var(--fontContent);
+    padding: 10px;
+    /* Añade padding para asegurar espacio alrededor del texto */
+}

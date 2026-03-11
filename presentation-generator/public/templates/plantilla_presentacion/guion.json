@@ -1,0 +1,87 @@
+{
+  "nombre": "",
+  "descripcion": "",
+  "url_svg": "Svgs/.svg",
+  "audio_presentacion": "Audios/.mp3",
+  "audio_presentacion_narracion": "",
+  "audio_despedida": "Audios/audio_final.mp3",
+  "audio_despedida_narracion": "Has completado esta presentación, ahora haz clic en el botón adelante para continuar.",
+  "debug": true,
+  "items": [
+    {
+      "id": "1",
+      "sub_titulo": "Aqui va el titulo del item",
+      "tipo": "imagen",
+      "narracion": "aqui va la narracion del item",
+      "audio": "Aqui va lo que va decir la IA que seria el subtitulo + la narracion",
+      "url_imagen": "Imagenes/.jpg",
+      "url_audio": "Audios/.mp3",
+      "estado": false
+    },
+    {
+      "id": "2",
+      "sub_titulo": "Aqui va el titulo del item",
+      "tipo": "svgAudio",
+      "narracion": "aqui va la narracion del item",
+      "audio": "Aqui va lo que va decir la IA que seria el subtitulo + la narracion",
+      "url_imagen": "Imagenes/.svg",
+      "url_audio": "Audios/.mp3",
+      "estado": false,
+      "sub_items": [
+        {
+          "id": "1",
+          "audio": "Aqui va lo que va decir la IA que seria la narracion del sub item",
+          "url_audio": "Audios/.mp3",
+          "estado": false
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "sub_titulo": "Aqui va el titulo del item",
+      "tipo": "galeria2D",
+      "narracion": "aqui va la narracion del item",
+      "audio": "Aqui va lo que va decir la IA que seria el subtitulo + la narracion",
+      "url_imagen": "Imagenes/.jpg",
+      "url_audio": "Audios/.mp3",
+      "estado": false,
+      "sub_items": [
+        {
+          "narracion": "aqui va la narracion del sub item",
+          "audio": "Aqui va lo que va decir la IA que seria la narracion del sub item",
+          "url_imagen": "Imagenes/.jpg",
+          "url_audio": "Audios/.mp3",
+          "estado": false
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "sub_titulo": "Aqui va el titulo del item",
+      "tipo": "galeriaTexto",
+      "narracion": "aqui va la narracion del item",
+      "audio": "Aqui va lo que va decir la IA que seria el subtitulo + la narracion",
+      "url_imagen": "Imagenes/.jpg",
+      "url_audio": "Audios/.mp3",
+      "estado": false,
+      "sub_items": [
+        {
+          "label": "Aqui va el label del sub item",
+          "narracion": "aqui va la narracion del sub item",
+          "audio": "Aqui va lo que va decir la IA que seria la el label del sub item + la narracion",
+          "url_imagen": "Imagenes/.jpg",
+          "url_audio": "Audios/.mp3",
+          "estado": false
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "sub_titulo": "Aqui va el titulo del item",
+      "url_audio": "Audios/.mp3",
+      "tipo": "video",
+      "url_video": "Videos/.mp4",
+      "estado": false
+    }
+  ]
+}
