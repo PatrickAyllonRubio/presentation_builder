@@ -15,6 +15,13 @@ import lamejs from '@jambonz/lamejs';
 export function encodePcmToMp3(pcmBuffer, sampleRate = 24000, kbps = 192) {
   const samples = new Int16Array(pcmBuffer);
   const channels = 1;
+
+  // Fade-in de ~15ms para eliminar el pop/click inicial del encoder LAME
+  const fadeInSamples = Math.min(Math.round(sampleRate * 0.015), samples.length);
+  for (let i = 0; i < fadeInSamples; i++) {
+    samples[i] = Math.round(samples[i] * (i / fadeInSamples));
+  }
+
   const encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
 
   const mp3Parts = [];

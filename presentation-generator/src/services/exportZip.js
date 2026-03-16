@@ -131,6 +131,17 @@ async function fetchBlob(objectUrl) {
   return res.blob();
 }
 
+async function tryFetchTemplateBlob(relativePath) {
+  try {
+    const cacheBuster = Date.now();
+    const response = await fetch(`${TEMPLATE_BASE}/${relativePath}?t=${cacheBuster}`);
+    if (!response.ok) return null;
+    return await response.blob();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Exporta toda la presentación como archivo ZIP.
  * @param {function} [onProgress] - Callback (step, total, label)
@@ -224,15 +235,21 @@ export async function exportPresentation(onProgress) {
 
   // 4. Agregar imágenes (base64 data URL → binario)
   for (const imgResource of resources.image) {
-    const bytes = dataUrlToBytes(imgResource.content);
-    zip.file(`Imagenes/${imgResource.name}`, bytes);
+    const persisted = await tryFetchTemplateBlob(`Imagenes/${imgResource.name}`);
+    if (persisted) {
+      zip.file(`Imagenes/${imgResource.name}`, persisted);
+    } else {
+      const bytes = dataUrlToBytes(imgResource.content);
+      zip.file(`Imagenes/${imgResource.name}`, bytes);
+    }
     progress(`Imagenes/${imgResource.name}`);
   }
 
   // 5. Agregar videos (Object URL → fetch blob)
   for (const vidResource of resources.video) {
     try {
-      const blob = await fetchBlob(vidResource.content);
+      const persisted = await tryFetchTemplateBlob(`Videos/${vidResource.name}`);
+      const blob = persisted || await fetchBlob(vidResource.content);
       zip.file(`Videos/${vidResource.name}`, blob);
     } catch {
       // Video no accesible

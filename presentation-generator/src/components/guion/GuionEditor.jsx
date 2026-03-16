@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import {
   Download, Upload, Code2, RotateCcw, Plus, Image as ImageIcon,
-  Music, Grid2x2, Type, Film, ChevronDown, FileJson
+  Music, Grid2x2, Type, Film, ChevronDown, FileJson, FileSpreadsheet
 } from 'lucide-react';
 import useGuionStore from '../../stores/guionStore.js';
+import { toast, confirm } from '../../stores/toastStore.js';
 import { MetadataEditor } from './MetadataEditor.jsx';
 import { ItemEditor } from './ItemEditor.jsx';
 
@@ -49,7 +50,7 @@ export function GuionEditor() {
           const json = JSON.parse(ev.target.result);
           fromJSON(json);
         } catch {
-          alert('El archivo no es un JSON válido');
+          toast.error('El archivo no es un JSON válido');
         }
       };
       reader.readAsText(file);
@@ -62,8 +63,8 @@ export function GuionEditor() {
     setAddMenuOpen(false);
   };
 
-  const handleReset = () => {
-    if (window.confirm('¿Resetear todo el guion? No se puede deshacer.')) {
+  const handleReset = async () => {
+    if (await confirm('¿Resetear todo el guion? No se puede deshacer.')) {
       reset();
     }
   };
@@ -73,7 +74,14 @@ export function GuionEditor() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         <button onClick={handleImport} className="btn-secondary">
-          <Upload size={14} /> Importar
+          <Upload size={14} /> Importar JSON
+        </button>
+        <button
+          disabled
+          className="btn-secondary opacity-50 cursor-not-allowed"
+          title="Próximamente: importar desde PowerPoint"
+        >
+          <FileSpreadsheet size={14} /> Importar PPTX
         </button>
         <button onClick={handleExport} className="btn-primary">
           <Download size={14} /> Exportar

@@ -70,6 +70,75 @@ const useResourcesStore = create((set, get) => ({
     });
   },
 
+  syncConvertedImageNames: (convertedNames) => {
+    if (!Array.isArray(convertedNames) || convertedNames.length === 0) return;
+
+    // convertedSizes: [{ name, size }] (opcional)
+    const sizeMap = Array.isArray(convertedSizes)
+      ? Object.fromEntries(convertedSizes.map(({ name, size }) => [String(name).toLowerCase(), size]))
+      : {};
+
+    set((state) => {
+      const convertedSet = new Set(convertedNames.map((name) => String(name).toLowerCase()));
+      const updatedImages = state.resources.image.map((resource) => {
+        const currentName = String(resource.name || '');
+        const lowerCurrent = currentName.toLowerCase();
+
+        let newSize = resource.metadata.size;
+        // Buscar tamaño actualizado por nombre convertido
+        if (sizeMap[lowerCurrent]) {
+          newSize = sizeMap[lowerCurrent];
+        } else {
+          // Buscar por base (png -> jpg)
+          const base = lowerCurrent.replace(/\.(png|jpe?g)$/i, '');
+          const candidate = `${base}.jpg`;
+          if (sizeMap[candidate]) {
+            newSize = sizeMap[candidate];
+          }
+        }
+
+        // Si ya coincide con un nombre convertido, solo asegura metadatos JPG y actualiza size.
+        if (convertedSet.has(lowerCurrent)) {
+          return {
+            ...resource,
+            name: currentName.replace(/\.(png|jpe?g)$/i, '.jpg'),
+            type: 'image/jpeg',
+            metadata: {
+              ...resource.metadata,
+              mimeType: 'image/jpeg',
+              size: newSize,
+            },
+          };
+        }
+
+        // Mapear png original -> jpg convertido por nombre base.
+        const base = lowerCurrent.replace(/\.(png|jpe?g)$/i, '');
+        const candidate = `${base}.jpg`;
+        if (convertedSet.has(candidate)) {
+          return {
+            ...resource,
+            name: currentName.replace(/\.(png|jpe?g)$/i, '.jpg'),
+            type: 'image/jpeg',
+            metadata: {
+              ...resource.metadata,
+              mimeType: 'image/jpeg',
+              size: newSize,
+            },
+          };
+        }
+
+        return resource;
+      });
+
+      return {
+        resources: {
+          ...state.resources,
+          image: updatedImages,
+        },
+      };
+    });
+  },
+
   clearAllResources: () => {
     // Limpiar todos los Object URLs
     const state = get();

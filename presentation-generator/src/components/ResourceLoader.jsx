@@ -1,27 +1,22 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useFileUpload } from '../hooks/useFileUpload.js';
 import { DropZone } from './DropZone.jsx';
 import { ResourceViewer } from './ResourceViewer.jsx';
-import { Toast } from './Toast.jsx';
+import { toast } from '../stores/toastStore.js';
 
 export function ResourceLoader() {
-  const [toastMessage, setToastMessage] = useState(null);
-  const [toastType, setToastType] = useState('success');
-  const { uploadFiles, isLoading, error, uploadProgress } = useFileUpload();
+  const { uploadFiles, isLoading, uploadProgress } = useFileUpload();
 
   const handleUpload = useCallback(
     async (files) => {
-      setToastMessage(null);
-      await uploadFiles(files);
-      if (!error) {
-        setToastType('success');
-        setToastMessage(`${files.length} archivo(s) cargado(s)`);
+      const result = await uploadFiles(files);
+      if (result.error) {
+        toast.error(result.error);
       } else {
-        setToastType('error');
-        setToastMessage(error);
+        toast.success(`${result.successCount} archivo(s) cargado(s)`);
       }
     },
-    [uploadFiles, error]
+    [uploadFiles]
   );
 
   return (
@@ -49,16 +44,6 @@ export function ResourceLoader() {
 
       {/* Resources */}
       <ResourceViewer />
-
-      {/* Toast */}
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          duration={4000}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
     </>
   );
 }

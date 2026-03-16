@@ -4,6 +4,7 @@ import { processSVG } from '../utils/fileProcessors/svgProcessor.js';
 import { processImage } from '../utils/fileProcessors/imageProcessor.js';
 import { processVideo } from '../utils/fileProcessors/videoProcessor.js';
 import useResourcesStore from '../stores/resourcesStore.js';
+import { uploadResourceToTemplate } from '../services/optimizationHelper.js';
 
 export function useFileUpload() {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +35,7 @@ export function useFileUpload() {
         const errorMsg = `${firstError.file.name}: ${firstError.validation.errors[0]}`;
         setError(errorMsg);
         setStoreError(errorMsg);
-        return;
+        return { successCount: 0, error: errorMsg };
       }
 
       // 2. Procesar cada archivo válido
@@ -42,6 +43,14 @@ export function useFileUpload() {
         const { file, type } = validFiles[i];
 
         try {
+          // Persistir en la plantilla al momento de subir para que los scripts lo detecten.
+          try {
+            await uploadResourceToTemplate(file, type);
+          } catch (persistError) {
+            const baseMessage = persistError?.message || 'No se pudo guardar el archivo en la plantilla';
+            throw new Error(`${baseMessage}. Inicia el helper local con: npm run optimization:helper`);
+          }
+
           let processed;
 
           if (type === 'svg') {
@@ -67,10 +76,12 @@ export function useFileUpload() {
 
       // Éxito
       setUploadProgress(100);
+      return { successCount: validFiles.length, error: null };
     } catch (err) {
       const errorMsg = err.message || 'Error desconocido al cargar archivos';
       setError(errorMsg);
       setStoreError(errorMsg);
+      return { successCount: 0, error: errorMsg };
     } finally {
       setIsLoading(false);
     }

@@ -21,7 +21,7 @@ export function VoiceSelector() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
               background: isActive ? 'var(--c-accent)' : 'transparent',
-              color: isActive ? '#fff' : 'var(--c-text-secondary)',
+              color: isActive ? 'var(--c-bg)' : 'var(--c-text-secondary)',
               border: isActive ? 'none' : '1px solid var(--c-border)',
             }}
           >

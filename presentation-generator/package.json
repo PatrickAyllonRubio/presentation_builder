@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "optimization:helper": "node Scripts/optimization_helper_server.mjs"
   },
   "dependencies": {
     "@jambonz/lamejs": "^1.2.2",

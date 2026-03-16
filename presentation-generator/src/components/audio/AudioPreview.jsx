@@ -87,7 +87,7 @@ export function AudioPreview({ url, label }) {
         <button
           onClick={togglePlay}
           className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-          style={{ background: 'var(--c-accent)', color: '#fff' }}
+          style={{ background: 'var(--c-accent)', color: 'var(--c-bg)' }}
         >
           {playing ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
         </button>

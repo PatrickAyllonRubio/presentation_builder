@@ -80,7 +80,7 @@ function SecondaryEditor({ item, index }) {
         {(item._svgSelections?.length || 0) > 0 && (
           <span
             className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-semibold"
-            style={{ background: 'var(--c-accent)', color: '#fff' }}
+            style={{ background: 'var(--c-accent)', color: 'var(--c-bg)' }}
           >
             {item._svgSelections.length} sel.
           </span>
