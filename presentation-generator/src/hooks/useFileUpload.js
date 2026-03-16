@@ -4,7 +4,7 @@ import { processSVG } from '../utils/fileProcessors/svgProcessor.js';
 import { processImage } from '../utils/fileProcessors/imageProcessor.js';
 import { processVideo } from '../utils/fileProcessors/videoProcessor.js';
 import useResourcesStore from '../stores/resourcesStore.js';
-import { uploadResourceToTemplate } from '../services/optimizationHelper.js';
+// ...existing code...
 
 export function useFileUpload() {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,36 +42,21 @@ export function useFileUpload() {
       for (let i = 0; i < validFiles.length; i++) {
         const { file, type } = validFiles[i];
 
-        try {
-          // Persistir en la plantilla al momento de subir para que los scripts lo detecten.
-          try {
-            await uploadResourceToTemplate(file, type);
-          } catch (persistError) {
-            const baseMessage = persistError?.message || 'No se pudo guardar el archivo en la plantilla';
-            throw new Error(`${baseMessage}. Inicia el helper local con: npm run optimization:helper`);
-          }
+        let processed;
 
-          let processed;
-
-          if (type === 'svg') {
-            processed = await processSVG(file);
-          } else if (type === 'image') {
-            processed = await processImage(file);
-          } else if (type === 'video') {
-            processed = await processVideo(file);
-          }
-
-          // 3. Agregar al store
-          addResource(type, file, processed.content, processed.metadata);
-
-          // Actualizar progreso
-          setUploadProgress(((i + 1) / validFiles.length) * 100);
-        } catch (fileError) {
-          const errorMsg = `${file.name}: ${fileError.message}`;
-          setError(errorMsg);
-          setStoreError(errorMsg);
-          throw fileError; // Detener en el primer error
+        if (type === 'svg') {
+          processed = await processSVG(file);
+        } else if (type === 'image') {
+          processed = await processImage(file);
+        } else if (type === 'video') {
+          processed = await processVideo(file);
         }
+
+        // 3. Agregar al store
+        addResource(type, file, processed.content, processed.metadata);
+
+        // Actualizar progreso
+        setUploadProgress(((i + 1) / validFiles.length) * 100);
       }
 
       // Éxito
