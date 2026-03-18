@@ -1,53 +1,42 @@
 /**
- * Google Cloud Text-to-Speech API service.
- * Adapta la lógica de AutomatizacionAudios/main.py al browser.
+ * Google Cloud Text-to-Speech — ahora proxied por el backend.
+ * La API key ya NO se envía desde el frontend; vive en el .env del servidor.
  */
 
-import { VOICE_CONFIGS } from './voiceConfigs.js';
 import { encodePcmToMp3 } from './mp3Encoder.js';
 
-const TTS_ENDPOINT = 'https://texttospeech.googleapis.com/v1/text:synthesize';
+const BACKEND_TTS = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/tts/synthesize`;
 
 /**
- * Sintetiza texto a audio usando Google Cloud TTS.
- * @param {string} text - Texto a sintetizar
+ * Sintetiza texto a audio llamando al proxy del backend.
+ * @param {string} text
  * @param {string} voiceGender - 'hombre' | 'mujer'
- * @param {string} apiKey - API key de Google Cloud
- * @param {object} [overrides] - Overrides opcionales para audioConfig (speakingRate, pitch, etc.)
- * @returns {Promise<{ blob: Blob, url: string }>} Audio como Blob y Object URL
+ * @param {string} _apiKey - ignorado (se mantiene firma por compatibilidad)
+ * @param {object} [overrides] - speakingRate, pitch, etc.
  */
-export async function synthesize(text, voiceGender, apiKey, overrides = {}) {
+export async function synthesize(text, voiceGender, _apiKey, overrides = {}) {
   if (!text?.trim()) throw new Error('El texto está vacío');
-  if (!apiKey?.trim()) throw new Error('API Key no configurada');
 
-  const config = VOICE_CONFIGS[voiceGender];
-  if (!config) throw new Error(`Voz "${voiceGender}" no válida`);
-
-  const requestBody = {
-    input: { text },
-    voice: { ...config.voice },
-    audioConfig: {
-      ...config.audioConfig,
-      ...overrides,
-    },
-  };
-
-  const response = await fetch(`${TTS_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
+  const response = await fetch(BACKEND_TTS, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify({
+      text,
+      voice: voiceGender,
+      speaking_rate: overrides.speakingRate ?? null,
+      pitch: overrides.pitch ?? 0,
+    }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const msg = errorData?.error?.message || `HTTP ${response.status}`;
+    const msg = errorData?.detail || `HTTP ${response.status}`;
     throw new Error(`Error de TTS: ${msg}`);
   }
 
   const data = await response.json();
   const rawPcm = base64ToArrayBuffer(data.audioContent);
 
-  // LINEAR16 → MP3 de alta calidad (192 kbps) via lamejs
   const blob = encodePcmToMp3(rawPcm, 24000, 192);
   const url = URL.createObjectURL(blob);
 
@@ -56,21 +45,15 @@ export async function synthesize(text, voiceGender, apiKey, overrides = {}) {
 
 /**
  * Genera audios para múltiples textos secuencialmente.
- * @param {Array<{key: string, text: string}>} entries
- * @param {string} voiceGender
- * @param {string} apiKey
- * @param {object} [overrides]
- * @param {function} [onProgress] - Callback (completed, total, key)
- * @returns {Promise<Map<string, {blob: Blob, url: string}>>}
  */
-export async function synthesizeBatch(entries, voiceGender, apiKey, overrides = {}, onProgress) {
+export async function synthesizeBatch(entries, voiceGender, _apiKey, overrides = {}, onProgress) {
   const results = new Map();
   const validEntries = entries.filter((e) => e.text?.trim());
 
   for (let i = 0; i < validEntries.length; i++) {
     const { key, text } = validEntries[i];
     try {
-      const result = await synthesize(text, voiceGender, apiKey, overrides);
+      const result = await synthesize(text, voiceGender, null, overrides);
       results.set(key, result);
     } catch (err) {
       results.set(key, { error: err.message });

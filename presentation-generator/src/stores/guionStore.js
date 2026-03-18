@@ -496,6 +496,25 @@ const useGuionStore = create((set, get) => ({
     });
   },
 
+  // --- Backend: guardar/cargar estado interno (IDs sin resolver) ---
+  // Guarda el estado actual tal cual (con UUIDs de recursos), para persistir en BD
+  toBackendJSON: () => {
+    const { metadata, items, svgContent, svgSelections, svgStyleTargets } = get();
+    return { metadata, items, svgContent, svgSelections, svgStyleTargets };
+  },
+
+  // Carga el estado guardado desde BD (sin necesidad de resolver rutas)
+  loadFromBackend: (data) => {
+    if (!data) return;
+    set({
+      metadata: data.metadata || get().metadata,
+      items: data.items || [],
+      svgContent: data.svgContent || '',
+      svgSelections: data.svgSelections || [],
+      svgStyleTargets: data.svgStyleTargets || {},
+    });
+  },
+
   // --- Reset ---
   reset: () => {
     set({

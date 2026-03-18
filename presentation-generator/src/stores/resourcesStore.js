@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import useGuionStore from './guionStore.js';
+import { resourceService } from '../services/api.js';
 
 const useResourcesStore = create((set, get) => ({
   // Estado
@@ -18,6 +19,9 @@ const useResourcesStore = create((set, get) => ({
   addResource: (type, file, content, metadata) => {
     const newResource = {
       id: crypto.randomUUID(),
+      backendId: null,      // ID en la BD (se llena tras upload al backend)
+      moduleId: null,       // contexto para poder borrar en backend
+      presentationId: null,
       name: file.name,
       type: file.type,
       content, // base64 string o Blob URL
@@ -43,22 +47,68 @@ const useResourcesStore = create((set, get) => ({
     return newResource.id;
   },
 
+  // Asociar el ID del backend a un recurso local ya agregado
+  setBackendId: (type, localId, backendId, moduleId, presentationId) => {
+    set((state) => ({
+      resources: {
+        ...state.resources,
+        [type]: state.resources[type].map((r) =>
+          r.id === localId ? { ...r, backendId, moduleId, presentationId } : r
+        ),
+      },
+    }));
+  },
+
+  // Cargar un recurso ya persistido en el backend (al abrir el editor)
+  loadResourceFromBackend: (type, backendResource, content) => {
+    const exists = get().resources[type].find((r) => r.backendId === backendResource.id);
+    if (exists) return exists.id; // ya cargado
+
+    const localId = crypto.randomUUID();
+    const newResource = {
+      id: localId,
+      backendId: backendResource.id,
+      moduleId: backendResource.moduleId,
+      presentationId: backendResource.presentationId,
+      name: backendResource.original_name,
+      type: backendResource.mime_type,
+      content,
+      metadata: {
+        size: backendResource.size_bytes,
+        mimeType: backendResource.mime_type,
+      },
+      dateAdded: new Date(backendResource.created_at),
+    };
+    set((state) => ({
+      resources: {
+        ...state.resources,
+        [type]: [...state.resources[type], newResource],
+      },
+    }));
+    return localId;
+  },
+
   removeResource: (type, id) => {
     // Limpiar referencias en el guion antes de eliminar el recurso
     try {
       useGuionStore.getState().cleanupResourceReferences(type, id);
     } catch { /* guionStore no disponible aún */ }
 
+    const resource = get().resources[type].find((r) => r.id === id);
+
+    // Si tiene backendId, eliminarlo del servidor también
+    if (resource?.backendId && resource?.moduleId && resource?.presentationId) {
+      resourceService
+        .delete(resource.moduleId, resource.presentationId, resource.backendId)
+        .catch((e) => console.warn('Error eliminando recurso del backend:', e));
+    }
+
     set((state) => {
-      const resource = state.resources[type].find((r) => r.id === id);
-      
+      const res = state.resources[type].find((r) => r.id === id);
+
       // Limpiar Object URLs si existen
-      if (resource && (resource.metadata.requiresObjectURL || type === 'video' || type === 'audio')) {
-        try {
-          URL.revokeObjectURL(resource.content);
-        } catch (e) {
-          console.warn('Error revoking URL:', e);
-        }
+      if (res && (res.metadata?.requiresObjectURL || type === 'video' || type === 'audio')) {
+        try { URL.revokeObjectURL(res.content); } catch { /* ignore */ }
       }
 
       return {

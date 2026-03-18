@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
-  Volume2, Play, Loader2, Download, Key, Settings,
-  ChevronDown, CheckCircle2, AlertTriangle,
+  Volume2, Play, Loader2, Download, Settings,
+  ChevronDown, CheckCircle2,
 } from 'lucide-react';
 import useGuionStore from '../../stores/guionStore.js';
 import useAudioStore from '../../stores/audioStore.js';
@@ -17,8 +17,6 @@ export function AudioGeneratorPanel() {
   const updateItem = useGuionStore((s) => s.updateItem);
   const updateSubItem = useGuionStore((s) => s.updateSubItem);
 
-  const apiKey = useAudioStore((s) => s.apiKey);
-  const setApiKey = useAudioStore((s) => s.setApiKey);
   const voiceGender = useAudioStore((s) => s.voiceGender);
   const generating = useAudioStore((s) => s.generating);
   const setGenerating = useAudioStore((s) => s.setGenerating);
@@ -29,7 +27,6 @@ export function AudioGeneratorPanel() {
   const getOverrides = useAudioStore((s) => s.getOverrides);
 
   const [configOpen, setConfigOpen] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
 
   const entries = useMemo(
     () => collectAudioEntries(metadata, items),
@@ -70,7 +67,7 @@ export function AudioGeneratorPanel() {
 
   // --- Batch generation ---
   const handleGenerateAll = useCallback(async () => {
-    if (!apiKey || entries.length === 0) return;
+    if (entries.length === 0) return;
     setGenerating(true);
     setBatchProgress({ completed: 0, total: entries.length, currentKey: '' });
 
@@ -78,7 +75,7 @@ export function AudioGeneratorPanel() {
       const results = await synthesizeBatch(
         entries,
         voiceGender,
-        apiKey,
+        null,
         getOverrides(),
         (completed, total, key) => {
           setBatchProgress({ completed, total, currentKey: key });
@@ -96,7 +93,7 @@ export function AudioGeneratorPanel() {
     } finally {
       setGenerating(false);
     }
-  }, [apiKey, entries, voiceGender, getOverrides, setGenerating, setBatchProgress, setAudio, writePathsToGuion]);
+  }, [entries, voiceGender, getOverrides, setGenerating, setBatchProgress, setAudio, writePathsToGuion]);
 
   // --- Download all audios as individual files ---
   const handleDownloadAll = useCallback(() => {
@@ -151,28 +148,6 @@ export function AudioGeneratorPanel() {
 
         {configOpen && (
           <div className="px-4 pb-4 space-y-4 animate-fade-in" style={{ borderTop: '1px solid var(--c-border)' }}>
-            {/* API Key */}
-            <div className="pt-3">
-              <label className="input-label">
-                <Key size={12} /> API Key de Google Cloud
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="input-field flex-1"
-                />
-                <button
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="btn-secondary text-[11px]"
-                >
-                  {showApiKey ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-            </div>
-
             {/* Voice gender */}
             <div>
               <label className="input-label mb-2">
@@ -195,15 +170,9 @@ export function AudioGeneratorPanel() {
           )}
         </div>
 
-        {!apiKey && (
-          <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--c-danger)' }}>
-            <AlertTriangle size={12} /> Configura tu API Key
-          </span>
-        )}
-
         <button
           onClick={handleGenerateAll}
-          disabled={generating || !apiKey}
+          disabled={generating}
           className="btn-primary disabled:opacity-40"
         >
           {generating ? (

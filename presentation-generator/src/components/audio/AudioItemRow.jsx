@@ -5,7 +5,6 @@ import { synthesize } from '../../services/tts/googleTts.js';
 import { AudioPreview } from './AudioPreview.jsx';
 
 export function AudioItemRow({ audioKey, label, text, outputPath }) {
-  const apiKey = useAudioStore((s) => s.apiKey);
   const voiceGender = useAudioStore((s) => s.voiceGender);
   const getOverrides = useAudioStore((s) => s.getOverrides);
   const audio = useAudioStore((s) => s.audios[audioKey]);
@@ -24,14 +23,14 @@ export function AudioItemRow({ audioKey, label, text, outputPath }) {
     setLoading(true);
     setError(null);
     try {
-      const result = await synthesize(text, voiceGender, apiKey, getOverrides());
+      const result = await synthesize(text, voiceGender, null, getOverrides());
       setAudio(audioKey, result);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [text, voiceGender, apiKey, audioKey, hasText, getOverrides, setAudio]);
+  }, [text, voiceGender, audioKey, hasText, getOverrides, setAudio]);
 
   return (
     <div
@@ -81,7 +80,7 @@ export function AudioItemRow({ audioKey, label, text, outputPath }) {
           )}
           <button
             onClick={handleGenerate}
-            disabled={loading || !hasText || !apiKey}
+            disabled={loading || !hasText}
             className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all disabled:opacity-40"
             style={{
               background: hasAudio ? 'var(--c-accent-soft)' : 'var(--c-accent)',

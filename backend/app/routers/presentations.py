@@ -158,3 +158,22 @@ def delete_resource(module_id: int, presentation_id: int, resource_id: int, db: 
         os.remove(resource.stored_path)
     db.delete(resource)
     db.commit()
+
+
+@router.get("/{presentation_id}/resources/{resource_id}/file")
+def serve_resource_file(module_id: int, presentation_id: int, resource_id: int, db: Session = Depends(get_db)):
+    """Devuelve el archivo binario del recurso para previsualización."""
+    _get_presentation_or_404(presentation_id, module_id, db)
+    resource = db.query(Resource).filter(
+        Resource.id == resource_id,
+        Resource.presentation_id == presentation_id
+    ).first()
+    if not resource:
+        raise HTTPException(status_code=404, detail="Recurso no encontrado")
+    if not os.path.exists(resource.stored_path):
+        raise HTTPException(status_code=404, detail="Archivo no encontrado en disco")
+    return FileResponse(
+        resource.stored_path,
+        media_type=resource.mime_type or "application/octet-stream",
+        filename=resource.original_name,
+    )

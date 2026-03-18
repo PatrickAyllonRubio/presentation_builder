@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.database import engine, Base
-from app.routers import courses, modules, presentations
+from app.routers import courses, modules, presentations, tts
 
 # Importar modelos para que SQLAlchemy los registre y cree las tablas
 import app.models  # noqa: F401
@@ -30,6 +30,7 @@ app.add_middleware(
 app.include_router(courses.router, prefix="/api")
 app.include_router(modules.router, prefix="/api")
 app.include_router(presentations.router, prefix="/api")
+app.include_router(tts.router, prefix="/api")
 
 
 @app.get("/")

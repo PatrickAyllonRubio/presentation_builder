@@ -4,8 +4,9 @@ import { DropZone } from './DropZone.jsx';
 import { ResourceViewer } from './ResourceViewer.jsx';
 import { toast } from '../stores/toastStore.js';
 
-export function ResourceLoader() {
-  const { uploadFiles, isLoading, uploadProgress } = useFileUpload();
+// backendContext = { moduleId, presentationId } — si se pasa, sube archivos al servidor
+export function ResourceLoader({ backendContext = null }) {
+  const { uploadFiles, isLoading, uploadProgress } = useFileUpload(backendContext);
 
   const handleUpload = useCallback(
     async (files) => {

@@ -4,14 +4,16 @@ import { processSVG } from '../utils/fileProcessors/svgProcessor.js';
 import { processImage } from '../utils/fileProcessors/imageProcessor.js';
 import { processVideo } from '../utils/fileProcessors/videoProcessor.js';
 import useResourcesStore from '../stores/resourcesStore.js';
-// ...existing code...
+import { resourceService } from '../services/api.js';
 
-export function useFileUpload() {
+// backendContext = { moduleId, presentationId } — si se pasa, sube los archivos al backend
+export function useFileUpload(backendContext = null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const addResource = useResourcesStore((state) => state.addResource);
+  const setBackendId = useResourcesStore((state) => state.setBackendId);
   const setStoreError = useResourcesStore((state) => state.setError);
 
   const uploadFiles = async (files) => {
@@ -22,14 +24,10 @@ export function useFileUpload() {
     setUploadProgress(0);
 
     try {
-      // 1. Validar todos los archivos
       const validations = validateMultipleFiles(files);
-
-      // Agrupar por resultado
       const validFiles = validations.filter((v) => v.validation.isValid);
       const invalidFiles = validations.filter((v) => !v.validation.isValid);
 
-      // Si hay archivos inválidos, mostrar error del primero
       if (invalidFiles.length > 0) {
         const firstError = invalidFiles[0];
         const errorMsg = `${firstError.file.name}: ${firstError.validation.errors[0]}`;
@@ -38,28 +36,37 @@ export function useFileUpload() {
         return { successCount: 0, error: errorMsg };
       }
 
-      // 2. Procesar cada archivo válido
       for (let i = 0; i < validFiles.length; i++) {
         const { file, type } = validFiles[i];
 
         let processed;
+        if (type === 'svg') processed = await processSVG(file);
+        else if (type === 'image') processed = await processImage(file);
+        else if (type === 'video') processed = await processVideo(file);
 
-        if (type === 'svg') {
-          processed = await processSVG(file);
-        } else if (type === 'image') {
-          processed = await processImage(file);
-        } else if (type === 'video') {
-          processed = await processVideo(file);
+        // 1. Agregar localmente al store (para preview inmediata)
+        const localId = addResource(type, file, processed.content, processed.metadata);
+
+        // 2. Si hay contexto de backend, subir el archivo al servidor
+        if (backendContext?.moduleId && backendContext?.presentationId) {
+          try {
+            const backendResource = await resourceService.upload(
+              backendContext.moduleId,
+              backendContext.presentationId,
+              type,
+              file
+            );
+            // Asociar el ID del backend al recurso local
+            setBackendId(type, localId, backendResource.id, backendContext.moduleId, backendContext.presentationId);
+          } catch (uploadErr) {
+            console.warn(`No se pudo subir "${file.name}" al backend:`, uploadErr);
+            // No falla el flujo local — el archivo queda disponible para esta sesión
+          }
         }
 
-        // 3. Agregar al store
-        addResource(type, file, processed.content, processed.metadata);
-
-        // Actualizar progreso
         setUploadProgress(((i + 1) / validFiles.length) * 100);
       }
 
-      // Éxito
       setUploadProgress(100);
       return { successCount: validFiles.length, error: null };
     } catch (err) {
