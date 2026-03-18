@@ -287,6 +287,10 @@ const useGuionStore = create((set, get) => ({
     }));
   },
 
+  setMetadata: (fields) => {
+    set((state) => ({ metadata: { ...state.metadata, ...fields } }));
+  },
+
   // --- Acciones de items ---
   addItem: (tipo) => {
     const template = ITEM_DEFAULTS[tipo];
@@ -496,11 +500,38 @@ const useGuionStore = create((set, get) => ({
     });
   },
 
-  // --- Backend: guardar/cargar estado interno (IDs sin resolver) ---
-  // Guarda el estado actual tal cual (con UUIDs de recursos), para persistir en BD
+  // --- Backend: guardar/cargar estado interno ---
+  // Resuelve UUIDs locales a backendIds estables antes de persistir en BD
   toBackendJSON: () => {
     const { metadata, items, svgContent, svgSelections, svgStyleTargets } = get();
-    return { metadata, items, svgContent, svgSelections, svgStyleTargets };
+    const resources = useResourcesStore.getState().resources;
+
+    function toBackendId(localId, type) {
+      if (!localId) return localId;
+      const r = (resources[type] || []).find((res) => res.id === localId);
+      return r?.backendId != null ? String(r.backendId) : localId;
+    }
+
+    return {
+      metadata: {
+        ...metadata,
+        url_svg: toBackendId(metadata.url_svg, 'svg'),
+      },
+      items: items.map((item) => ({
+        ...item,
+        url_imagen: item.url_imagen
+          ? toBackendId(item.url_imagen, item.tipo === 'svgAudio' ? 'svg' : 'image')
+          : item.url_imagen,
+        url_video: item.url_video ? toBackendId(item.url_video, 'video') : item.url_video,
+        sub_items: item.sub_items?.map((sub) => ({
+          ...sub,
+          url_imagen: sub.url_imagen ? toBackendId(sub.url_imagen, 'image') : sub.url_imagen,
+        })),
+      })),
+      svgContent,
+      svgSelections,
+      svgStyleTargets,
+    };
   },
 
   // Carga el estado guardado desde BD (sin necesidad de resolver rutas)

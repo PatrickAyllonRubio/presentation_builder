@@ -64,8 +64,7 @@ export function PresentationsPage() {
         </div>
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ background: 'var(--c-accent)', color: '#fff' }}
+          className="btn-primary"
         >
           <Plus size={15} /> Nueva presentación
         </button>
@@ -89,7 +88,7 @@ export function PresentationsPage() {
             onChange={(e) => setNewDesc(e.target.value)}
           />
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-1.5 rounded-lg text-sm font-medium" style={{ background: 'var(--c-accent)', color: '#fff' }}>Crear</button>
+            <button type="submit" className="btn-primary">Crear</button>
             <button type="button" onClick={() => setCreating(false)} className="px-4 py-1.5 rounded-lg text-sm" style={{ color: 'var(--c-text-muted)' }}>Cancelar</button>
           </div>
         </form>

@@ -59,33 +59,38 @@ const useResourcesStore = create((set, get) => ({
     }));
   },
 
-  // Cargar un recurso ya persistido en el backend (al abrir el editor)
+  // Cargar un recurso ya persistido en el backend (al abrir el editor).
+  // Usa String(backendId) como id local para que coincida con lo guardado en toBackendJSON.
   loadResourceFromBackend: (type, backendResource, content) => {
-    const exists = get().resources[type].find((r) => r.backendId === backendResource.id);
-    if (exists) return exists.id; // ya cargado
+    const backendIdStr = String(backendResource.id);
+    const exists = get().resources[type].find((r) => r.id === backendIdStr);
+    if (exists) return backendIdStr;
 
-    const localId = crypto.randomUUID();
-    const newResource = {
-      id: localId,
-      backendId: backendResource.id,
-      moduleId: backendResource.moduleId,
-      presentationId: backendResource.presentationId,
-      name: backendResource.original_name,
-      type: backendResource.mime_type,
-      content,
-      metadata: {
-        size: backendResource.size_bytes,
-        mimeType: backendResource.mime_type,
-      },
-      dateAdded: new Date(backendResource.created_at),
-    };
+    // Para imágenes: el content es base64 → ponerlo también en metadata.preview
+    // para que ResourceCard pueda mostrar la miniatura (usa resource.metadata.preview)
+    const isImage = type === 'image';
+
     set((state) => ({
       resources: {
         ...state.resources,
-        [type]: [...state.resources[type], newResource],
+        [type]: [...state.resources[type], {
+          id: backendIdStr,
+          backendId: backendResource.id,
+          moduleId: backendResource.moduleId,
+          presentationId: backendResource.presentationId,
+          name: backendResource.original_name,
+          type: backendResource.mime_type,
+          content,
+          metadata: {
+            size: backendResource.size_bytes,
+            mimeType: backendResource.mime_type,
+            preview: isImage ? content : undefined,
+          },
+          dateAdded: new Date(backendResource.created_at),
+        }],
       },
     }));
-    return localId;
+    return backendIdStr;
   },
 
   removeResource: (type, id) => {

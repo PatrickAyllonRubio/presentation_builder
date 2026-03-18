@@ -49,13 +49,18 @@ export function EditorPage({ theme, toggleTheme }) {
     if (!moduleId || !presentationId) return;
 
     const loadPresentation = async () => {
+      // Limpiar estado previo antes de cargar la nueva presentación
+      useGuionStore.getState().reset();
+      useResourcesStore.getState().clearAllResources();
+      useAudioStore.getState().clearAllAudios();
+
       // 1. Datos de la presentación + guion
       const p = await presentationService.get(moduleId, presentationId);
       setPresentationName(p.name);
       if (p.guion) {
         useGuionStore.getState().loadFromBackend(p.guion);
       } else {
-        useGuionStore.getState().setMetadata({ nombre: p.name });
+        useGuionStore.getState().updateMetadata('nombre', p.name);
       }
 
       // 2. Cargar recursos guardados (imágenes, SVGs, videos)
