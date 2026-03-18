@@ -142,7 +142,7 @@ export function SvgCanvas({
     if (eid === hoveredId) return;
     setHoveredId(eid);
     if (!selections.includes(eid)) {
-      candidate.style.filter = 'drop-shadow(0 0 4px rgba(120, 120, 120, 0.5))';
+      candidate.style.filter = 'drop-shadow(0 0 10px rgb(255, 123, 0))';
       candidate.style.cursor = 'pointer';
     }
   }, [hoveredId, selections]);
