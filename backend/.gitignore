@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+.venv/
+env/
+
+# Variables de entorno (contiene secrets)
+.env
+
+# Base de datos local (no subir datos de desarrollo)
+*.db
+*.sqlite3
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Archivos subidos por usuarios
+storage/
+
+# Misceláneos
+.DS_Store
+*.log
