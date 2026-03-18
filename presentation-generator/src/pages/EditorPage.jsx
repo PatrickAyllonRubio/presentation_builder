@@ -131,82 +131,67 @@ export function EditorPage({ theme, toggleTheme }) {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--c-bg)' }}>
-      <header className="glass sticky top-0 z-30 border-b" style={{ borderColor: 'var(--c-border)' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
-            {/* Izquierda: volver + nombre */}
-            <div className="flex items-center gap-3">
+      <header className="editor-header">
+        <div className="editor-header-inner">
+          {/* Izquierda: volver + nombre */}
+          <div className="editor-title-group">
+            <button
+              onClick={() => navigate(-1)}
+              className="btn-ghost"
+              style={{ padding: '6px' }}
+            >
+              <ArrowLeft size={15} />
+            </button>
+            <h1 className="editor-title">
+              {presentationName || guionNombre || 'Presentación'}
+            </h1>
+            {(guionNombre || presentationName) && (
               <button
-                onClick={() => navigate(-1)}
-                className="p-1.5 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
-                style={{ color: 'var(--c-text)' }}
+                onClick={handleClearAll}
+                className="entity-card-delete"
+                style={{ opacity: clearing ? 1 : undefined }}
+                title="Limpiar presentación"
+                disabled={clearing}
               >
-                <ArrowLeft size={15} />
+                <Trash2 size={14} className={clearing ? 'animate-bounce' : ''} />
               </button>
-              <h1 className="text-base font-semibold tracking-tight flex items-center gap-2" style={{ color: 'var(--c-text)' }}>
-                {presentationName || guionNombre || 'Presentación'}
-                {(guionNombre || presentationName) && (
-                  <button
-                    onClick={handleClearAll}
-                    className="group relative p-1.5 rounded-lg transition-all hover:scale-110"
-                    style={{
-                      color: clearing ? 'var(--c-danger)' : 'var(--c-text-muted)',
-                      background: clearing ? 'var(--c-danger-soft)' : 'transparent',
-                    }}
-                    title="Limpiar presentación"
-                    disabled={clearing}
-                  >
-                    <Trash2 size={14} className={clearing ? 'animate-bounce' : 'transition-transform group-hover:rotate-12'} />
-                  </button>
-                )}
-              </h1>
-            </div>
-
-            {/* Derecha: tabs + guardar + tema */}
-            <nav className="flex items-center gap-1">
-              {/* Botón guardar */}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                style={{ background: 'var(--c-accent)', color: '#fff', opacity: saving ? 0.6 : 1 }}
-              >
-                <Save size={13} />
-                <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar'}</span>
-              </button>
-
-              <div style={{ width: 1, height: 20, background: 'var(--c-border)', margin: '0 4px' }} />
-
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-lg transition-all"
-                style={{ color: 'var(--c-text-muted)', border: '1px solid var(--c-border)', background: 'var(--c-surface)' }}
-              >
-                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-              </button>
-
-              <div style={{ width: 1, height: 20, background: 'var(--c-border)', margin: '0 4px' }} />
-
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className="relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-                    style={{
-                      color: isActive ? 'var(--c-text)' : 'var(--c-text-muted)',
-                      background: isActive ? 'var(--c-accent-soft)' : 'transparent',
-                    }}
-                  >
-                    <Icon size={15} strokeWidth={isActive ? 2 : 1.5} />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            )}
           </div>
+
+          {/* Derecha: guardar + divider + tabs + divider + tema */}
+          <nav className="editor-nav">
+            <button onClick={handleSave} disabled={saving} className="btn-primary">
+              <Save size={13} />
+              <span className="editor-tab-label">{saving ? 'Guardando...' : 'Guardar'}</span>
+            </button>
+
+            <div className="editor-divider" />
+
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="editor-tab"
+                  data-active={isActive}
+                >
+                  <Icon size={15} strokeWidth={isActive ? 2 : 1.5} />
+                  <span className="editor-tab-label">{tab.label}</span>
+                </button>
+              );
+            })}
+
+            <div className="editor-divider" />
+
+            <button
+              onClick={toggleTheme}
+              className="theme-toggle"
+            >
+              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+          </nav>
         </div>
       </header>
 

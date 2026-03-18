@@ -5,6 +5,7 @@ import { ModulesPage } from './pages/ModulesPage.jsx';
 import { PresentationsPage } from './pages/PresentationsPage.jsx';
 import { EditorPage } from './pages/EditorPage.jsx';
 import { ToastContainer } from './components/Toast.jsx';
+import { AppShell } from './components/layout/AppShell.jsx';
 import './styles/globals.css';
 
 function getInitialTheme() {
@@ -26,9 +27,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CoursesPage />} />
-        <Route path="/courses/:courseId/modules" element={<ModulesPage />} />
-        <Route path="/modules/:moduleId/presentations" element={<PresentationsPage />} />
+        {/* Vistas de navegación — layout compartido */}
+        <Route element={<AppShell theme={theme} toggleTheme={toggleTheme} />}>
+          <Route path="/" element={<CoursesPage />} />
+          <Route path="/courses/:courseId/modules" element={<ModulesPage />} />
+          <Route path="/courses/:courseId/modules/:moduleId/presentations" element={<PresentationsPage />} />
+        </Route>
+
+        {/* Editor — layout propio */}
         <Route path="/editor/:moduleId/:presentationId" element={<EditorPage theme={theme} toggleTheme={toggleTheme} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
