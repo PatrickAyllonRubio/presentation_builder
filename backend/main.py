@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -18,10 +19,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS: permite que el frontend React en localhost:5173 se comunique con la API
+# CORS: orígenes permitidos desde variable de entorno o defaults de desarrollo
+_origins_env = os.getenv("CORS_ORIGINS", "")
+allowed_origins = (
+    [o.strip() for o in _origins_env.split(",") if o.strip()]
+    if _origins_env
+    else ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
