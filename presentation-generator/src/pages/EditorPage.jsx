@@ -63,17 +63,38 @@ export function EditorPage({ theme, toggleTheme }) {
         useGuionStore.getState().updateMetadata('nombre', p.name);
       }
 
-      // 2. Cargar recursos guardados (imágenes, SVGs, videos)
+      // 2. Cargar recursos guardados (imágenes, SVGs, videos y audios)
       const backendResources = await resourceService.list(moduleId, presentationId);
       const loadResourceFromBackend = useResourcesStore.getState().loadResourceFromBackend;
 
       for (const r of backendResources) {
         const resourceType = MIME_TO_TYPE[r.mime_type];
+        const fileUrl = `${API_BASE}/modules/${moduleId}/presentations/${presentationId}/resources/${r.id}/file`;
+
+        // Audios: cargar en audioStore usando el nombre de archivo como clave
+        if (!resourceType && (r.mime_type === 'audio/mpeg' || r.mime_type === 'audio/mp3' || r.mime_type === 'audio/wav')) {
+          try {
+            const resp = await fetch(fileUrl);
+            if (!resp.ok) { console.warn(`Audio no encontrado: ${r.original_name} (${resp.status})`); continue; }
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+            // El nombre original es "{key}.mp3", extraer la clave
+            const key = r.original_name.replace(/\.[^.]+$/, '');
+            useAudioStore.getState().setAudio(key, { blob, url, backendId: r.id });
+          } catch (e) {
+            console.warn(`No se pudo cargar audio ${r.original_name}:`, e);
+          }
+          continue;
+        }
+
         if (!resourceType) continue;
 
         try {
-          const fileUrl = `${API_BASE}/modules/${moduleId}/presentations/${presentationId}/resources/${r.id}/file`;
           const resp = await fetch(fileUrl);
+          if (!resp.ok) {
+            console.warn(`No se pudo obtener archivo ${r.original_name}: HTTP ${resp.status}`);
+            continue;
+          }
           const blob = await resp.blob();
 
           let content;
@@ -108,8 +129,24 @@ export function EditorPage({ theme, toggleTheme }) {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
+      // 1. Guardar JSON del guion
       const guion = useGuionStore.getState().toBackendJSON();
       await presentationService.saveGuion(moduleId, presentationId, guion);
+
+      // 2. Subir audios generados que aún no tienen backendId
+      const audios = useAudioStore.getState().audios;
+      const setAudioBackendId = useAudioStore.getState().setAudioBackendId;
+      for (const [key, audioData] of Object.entries(audios)) {
+        if (!audioData?.blob || audioData.backendId) continue; // Sin blob o ya subido
+        try {
+          const file = new File([audioData.blob], `${key}.mp3`, { type: 'audio/mpeg' });
+          const saved = await resourceService.upload(moduleId, presentationId, 'audio', file);
+          setAudioBackendId(key, saved.id);
+        } catch (err) {
+          console.warn(`Error subiendo audio "${key}":`, err);
+        }
+      }
+
       showToast?.('Guion guardado correctamente', 'success');
     } catch {
       showToast?.('Error al guardar', 'error');

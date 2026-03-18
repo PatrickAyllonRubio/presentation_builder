@@ -28,6 +28,16 @@ const useAudioStore = create((set, get) => ({
     }));
   },
 
+  // Registra el ID del backend para un audio ya generado (evita re-subir en cada guardado)
+  setAudioBackendId: (key, backendId) => {
+    set((state) => ({
+      audios: {
+        ...state.audios,
+        [key]: { ...state.audios[key], backendId },
+      },
+    }));
+  },
+
   removeAudio: (key) => {
     const audio = get().audios[key];
     if (audio?.url) {

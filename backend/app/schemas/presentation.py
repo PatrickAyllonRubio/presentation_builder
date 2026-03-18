@@ -39,5 +39,6 @@ class ResourceOut(BaseModel):
     stored_path: str
     mime_type: str | None = None
     size_bytes: int | None = None
+    created_at: datetime | None = None
 
     model_config = {"from_attributes": True}

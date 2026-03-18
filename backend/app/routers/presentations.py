@@ -12,7 +12,15 @@ from app.models.resource import Resource
 from app.schemas.presentation import PresentationCreate, PresentationUpdate, PresentationOut, ResourceOut
 
 load_dotenv()
-STORAGE_PATH = os.getenv("STORAGE_PATH", "./storage")
+
+# Directorio raíz del backend (dos niveles arriba de app/routers/)
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+_BACKEND_DIR = os.path.dirname(os.path.dirname(_THIS_DIR))
+
+# STORAGE_PATH siempre como ruta absoluta para evitar problemas con CWD
+STORAGE_PATH = os.path.abspath(
+    os.getenv("STORAGE_PATH", os.path.join(_BACKEND_DIR, "storage"))
+)
 
 ALLOWED_TYPES = {
     "image": ["image/jpeg", "image/png", "image/webp"],
@@ -154,8 +162,11 @@ def delete_resource(module_id: int, presentation_id: int, resource_id: int, db: 
     ).first()
     if not resource:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
-    if os.path.exists(resource.stored_path):
-        os.remove(resource.stored_path)
+    stored = resource.stored_path
+    if not os.path.isabs(stored):
+        stored = os.path.normpath(os.path.join(_BACKEND_DIR, stored))
+    if os.path.exists(stored):
+        os.remove(stored)
     db.delete(resource)
     db.commit()
 
@@ -170,10 +181,22 @@ def serve_resource_file(module_id: int, presentation_id: int, resource_id: int, 
     ).first()
     if not resource:
         raise HTTPException(status_code=404, detail="Recurso no encontrado")
-    if not os.path.exists(resource.stored_path):
+
+    # Resolver rutas relativas (registros antiguos) al directorio del backend
+    stored = resource.stored_path
+    if not os.path.isabs(stored):
+        stored = os.path.normpath(os.path.join(_BACKEND_DIR, stored))
+
+    # Seguridad: el archivo debe estar dentro de STORAGE_PATH
+    real_stored = os.path.realpath(stored)
+    real_storage = os.path.realpath(STORAGE_PATH)
+    if not (real_stored == real_storage or real_stored.startswith(real_storage + os.sep)):
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+
+    if not os.path.exists(stored):
         raise HTTPException(status_code=404, detail="Archivo no encontrado en disco")
     return FileResponse(
-        resource.stored_path,
+        stored,
         media_type=resource.mime_type or "application/octet-stream",
         filename=resource.original_name,
     )
