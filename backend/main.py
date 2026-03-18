@@ -19,13 +19,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS: orígenes permitidos desde variable de entorno o defaults de desarrollo
+# CORS: orígenes permitidos desde variable de entorno + defaults
 _origins_env = os.getenv("CORS_ORIGINS", "")
-allowed_origins = (
-    [o.strip() for o in _origins_env.split(",") if o.strip()]
-    if _origins_env
-    else ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
-)
+_extra = [o.strip() for o in _origins_env.split(",") if o.strip()]
+allowed_origins = list(set(_extra + [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "https://presentation-builder-pink.vercel.app",
+]))
 
 app.add_middleware(
     CORSMiddleware,
